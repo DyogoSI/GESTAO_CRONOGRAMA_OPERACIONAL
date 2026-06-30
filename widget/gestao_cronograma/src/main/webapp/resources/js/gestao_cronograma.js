@@ -275,6 +275,18 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         return "R$ " + valor.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
 
+    // Cores fixas por responsável: Cliente = laranja, IRHO = azul, Outros = cinza
+    getResponsavelInfo: function(responsavel) {
+        var normalizado = (responsavel || "").trim().toLowerCase();
+        if (normalizado === "cliente") {
+            return { key: "cliente", textClass: "resp-cliente", bgClass: "bg-cliente", stepClass: "step-cliente" };
+        }
+        if (normalizado === "irho") {
+            return { key: "irho", textClass: "resp-irho", bgClass: "bg-irho", stepClass: "step-irho" };
+        }
+        return { key: "outros", textClass: "resp-outros", bgClass: "bg-outros", stepClass: "step-outros" };
+    },
+
     formatarCompetencia: function(val) {
         if (!val) return "-";
         var partes = val.split('-');
@@ -477,7 +489,8 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         
         dadosFiltrados.forEach(function(item, index) {
             var displayId = index + 1; 
-            item.class = "c" + ((index % 8) + 1);
+            var respInfo = that.getResponsavelInfo(item.responsavel);
+            item.class = respInfo.textClass;
             
             var duracaoDias = 0;
             if (item.start !== "A definir" && item.start !== "Data Inválida" && item.end !== "A definir" && item.end !== "Data Inválida") {
@@ -493,7 +506,9 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                 labelCompetencia = that.formatarCompetencia(item.competencia);
             }
             
-            var divDescricao = item.desc && item.desc !== "-" ? '<div style="font-size: 11px; color: #64748b; margin-top: 4px; padding-left: 5px; font-weight: 500;">' + item.desc + '</div>' : '';
+            var temDetalhe = item.desc && item.desc !== "-" && String(item.desc).trim() !== "";
+            var detalheAttr = temDetalhe ? ' data-tooltip="' + String(item.desc).replace(/"/g, '&quot;') + '"' : '';
+            var iconeDetalhe = temDetalhe ? ' <i class="fa-regular fa-circle-question detail-hint"></i>' : '';
             
             var acoesHtml = '<button class="btn btn-sm" data-editar-etapa data-docid="' + item.documentId + '" title="Editar Etapa" style="padding: 6px 10px; border-radius: 4px; margin-right: 6px; background-color: var(--primary-blue); color: white; border: none;">' +
                     '<i class="fa-solid fa-pen"></i>' +
@@ -503,12 +518,11 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                   '</button>';
                   
             var trHtml = '<tr id="step-' + item.id + '-' + that.instanceId + '" style="cursor: pointer;">' +
-                '<td data-label="ETAPA"><span class="step-number">' + displayId + '</span></td>' +
+                '<td data-label="ETAPA"><span class="step-number ' + respInfo.stepClass + '">' + displayId + '</span></td>' +
                 '<td data-label="TAREFAS">' +
-                    '<div class="process-col ' + item.class + '"><i class="' + item.icon + '"></i> ' + item.name + '</div>' +
-                    divDescricao +
+                    '<div class="process-col ' + item.class + '"' + detalheAttr + '><i class="' + item.icon + '"></i> ' + item.name + iconeDetalhe + '</div>' +
                 '</td>' +
-                '<td data-label="RESPONSÁVEL">' + item.responsavel + '</td>' +
+                '<td data-label="RESPONSÁVEL"><span class="' + respInfo.textClass + '" style="font-weight: 800;">' + item.responsavel + '</span></td>' +
                 '<td data-label="INÍCIO" class="date-col date-start">' + item.start + '</td>' +
                 '<td data-label="TÉRMINO" class="date-col date-end">' + item.end + '</td>' +
                 '<td data-label="DURAÇÃO">' + duracaoDias + ' dias</td>' +
@@ -1165,6 +1179,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         $("#formNovaEtapa_" + this.instanceId).slideUp();
         this.editDocId = null;
         $("#atividadeEtapa_" + this.instanceId).val('');
+        $("#detalheAtividadeEtapa_" + this.instanceId).val('');
         $("#responsavelEtapa_" + this.instanceId).val('');
         $("#competenciaEtapa_" + this.instanceId).val($("#mesFiltro_" + this.instanceId).val() || this.getMesAtual());
         $("#dataInicio_" + this.instanceId).val('');
@@ -1199,6 +1214,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         };
         
         $("#atividadeEtapa_" + this.instanceId).val(itemToEdit.name);
+        $("#detalheAtividadeEtapa_" + this.instanceId).val(itemToEdit.desc && itemToEdit.desc !== "-" ? itemToEdit.desc : "");
         $("#responsavelEtapa_" + this.instanceId).val(itemToEdit.responsavel === "Não atribuído" ? "" : itemToEdit.responsavel);
         $("#competenciaEtapa_" + this.instanceId).val(itemToEdit.competencia || "");
         $("#dataInicio_" + this.instanceId).val(formatarData(itemToEdit.start));
@@ -1226,7 +1242,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
     salvarEtapa: function() {
         var that = this;
         var atividade = $("#atividadeEtapa_" + that.instanceId).val() || "";
-        var descricao = ""; 
+        var descricao = $("#detalheAtividadeEtapa_" + that.instanceId).val() || "";
         var responsavel = $("#responsavelEtapa_" + that.instanceId).val() || "";
         var competencia = $("#competenciaEtapa_" + that.instanceId).val() || "";
         var dataInicio = $("#dataInicio_" + that.instanceId).val() || "";

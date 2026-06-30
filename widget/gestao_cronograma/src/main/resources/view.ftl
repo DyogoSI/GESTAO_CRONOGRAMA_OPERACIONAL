@@ -1,3 +1,4 @@
+<!-- gestao_cronograma / view.ftl — código completo final -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -90,7 +91,7 @@
                 
                 <div class="row">
                     <div class="form-group col-md-3">
-                        <label for="atividadeEtapa_${instanceId}">Tarefa (Atividade)</label>
+                        <label for="atividadeEtapa_${instanceId}">Atividade</label>
                         <div class="input-with-icon">
                             <i class="fa-solid fa-tag"></i>
                             <input type="text" class="form-control" id="atividadeEtapa_${instanceId}" placeholder="Nome da Tarefa">
@@ -100,7 +101,12 @@
                         <label for="responsavelEtapa_${instanceId}">Responsável</label>
                         <div class="input-with-icon">
                             <i class="fa-solid fa-user"></i>
-                            <input type="text" class="form-control" id="responsavelEtapa_${instanceId}" placeholder="Nome">
+                            <select class="form-control" id="responsavelEtapa_${instanceId}">
+                                <option value="">Selecione...</option>
+                                <option value="Cliente">Cliente</option>
+                                <option value="IRHO">IRHO</option>
+                                <option value="Takono">Takono</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group col-md-2">
@@ -124,6 +130,13 @@
                             </label>
                         </div>
                         <input type="hidden" id="statusEtapa_${instanceId}" value="Pendente">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="detalheAtividadeEtapa_${instanceId}">Detalhe da Atividade <small style="font-weight: 500; color: var(--text-muted);">(exibido ao passar o mouse sobre a atividade no cronograma)</small></label>
+                        <textarea class="form-control" id="detalheAtividadeEtapa_${instanceId}" rows="2" placeholder="Descreva detalhes complementares desta atividade..."></textarea>
                     </div>
                 </div>
 
@@ -168,6 +181,11 @@
 
             <div class="main-content" style="display: grid; grid-template-columns: 1.8fr 0.8fr; gap: 25px; margin-bottom: 25px;">
                 <div class="left-column">
+                    <div class="responsavel-legend">
+                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-cliente-bg"></span> Cliente</span>
+                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-irho-bg"></span> IRHO</span>
+                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-outros-bg"></span> Takono</span>
+                    </div>
                     <div class="table-container">
                         <table style="width: 100%;">
                             <thead>
