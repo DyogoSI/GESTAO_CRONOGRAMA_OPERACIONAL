@@ -275,7 +275,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         return "R$ " + valor.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
 
-    // Cores fixas por responsável: Cliente = laranja, IRHO = azul, Outros = cinza
     getResponsavelInfo: function(responsavel) {
         var normalizado = (responsavel || "").trim().toLowerCase();
         if (normalizado === "cliente") {
@@ -458,20 +457,22 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         var mesSelecionado = $("#mesFiltro_" + this.instanceId).val();
         
         var dadosFiltrados = this.dadosCronograma.filter(function(item) {
-            if (item.end === "Data Inválida" || item.end === "A definir") return false;
-            
-            // PRIORIDADE PARA A DATA DE INÍCIO: A tarefa será exibida na tabela no mês de início
-            var tRef = that.parseDate(item.start) || that.parseDate(item.end);
-            if (!tRef) return false;
-            
-            var dRef = new Date(tRef);
-            var mesFisico = dRef.getFullYear() + "-" + ("0" + (dRef.getMonth() + 1)).slice(-2);
-            
-            return (mesFisico === mesSelecionado);
+            if (item.competencia && item.competencia !== "") {
+                return item.competencia === mesSelecionado;
+            }
+            if (item.start && item.start !== "A definir" && item.start !== "Data Inválida") {
+                var tInicio = that.parseDate(item.start);
+                if (tInicio) {
+                    var dInicio = new Date(tInicio);
+                    var mesFisico = dInicio.getFullYear() + "-" + ("0" + (dInicio.getMonth() + 1)).slice(-2);
+                    return mesFisico === mesSelecionado;
+                }
+            }
+            return false;
         });
         
         if (dadosFiltrados.length === 0) {
-            $tbody.append('<tr><td colspan="9" class="text-center" style="padding: 30px; color: #888;">Nenhuma etapa agendada para iniciar neste mês.</td></tr>');
+            $tbody.append('<tr><td colspan="9" class="text-center" style="padding: 30px; color: #888;">Nenhuma etapa com competência ou data de início neste mês.</td></tr>');
             this.renderizarKpisGestao(dadosFiltrados);
             this.renderizarPaneisLaterais(); 
             this.extractDates();
@@ -549,7 +550,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         var calMes = this.currentDate.getMonth();
         
         this.dadosCronograma.forEach(function(item) {
-            // CALENDÁRIO: Continua mapeando a data de Término para mostrar a bolinha do vencimento
+            // CALENDÁRIO: Continua mapeando a data de Término para mostrar a bolinha do vencimento real
             var tFim = that.parseDate(item.end);
             if (!tFim) return;
             
@@ -564,16 +565,19 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                         that.eventDates[time] = { steps: [], isStart: false, isEnd: true };
                     }
                     
-                    // GRAVA O MÊS DE INÍCIO DA TAREFA: Para que o clique na bolinha volte para a tabela do mês de início
-                    var tIni = that.parseDate(item.start) || tFim;
-                    var dIni = new Date(tIni);
-                    var startMes = dIni.getFullYear() + "-" + ("0" + (dIni.getMonth() + 1)).slice(-2); 
+                    // CORREÇÃO: O redirecionamento no clique deve ir para a aba da competência.
+                    var targetMes = item.competencia;
+                    if (!targetMes || targetMes === "") {
+                        var tIni = that.parseDate(item.start) || tFim;
+                        var dIni = new Date(tIni);
+                        targetMes = dIni.getFullYear() + "-" + ("0" + (dIni.getMonth() + 1)).slice(-2); 
+                    }
                     
                     that.eventDates[time].steps.push({ 
                         id: item.id, 
                         name: item.name.replace(/\n/g, ' ').trim(), 
                         type: 'Vencimento',
-                        startMes: startMes 
+                        startMes: targetMes 
                     });
                 }
             }
@@ -631,7 +635,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                         that.resetFilters(true); 
                         
                         var firstStep = currentEventData.steps[0];
-                        var taskMonth = firstStep.startMes; // Vai puxar o mês de Início
+                        var taskMonth = firstStep.startMes; // Agora puxa a competência
 
                         that.currentDate = new Date(parseInt(taskMonth.split('-')[0], 10), parseInt(taskMonth.split('-')[1], 10) - 1, 1);
                         $widgetContext.find("#mesFiltro_" + that.instanceId).val(taskMonth);
@@ -873,13 +877,18 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             var dataInicio = new Date(tInicio);
             var chaveMesFisicoInicio = dataInicio.getFullYear() + "-" + ("0" + (dataInicio.getMonth() + 1)).slice(-2);
 
+            // CORREÇÃO: Força o redirecionamento para o mês da competência
+            var targetMes = item.competencia;
+            if (!targetMes || targetMes === "") {
+                targetMes = chaveMesFisicoInicio;
+            }
+
             if (!concluido && termino < that.mockToday) {
                 if (!mesesAtraso[chaveMesFisicoTermino]) {
                     mesesAtraso[chaveMesFisicoTermino] = { total: 0, tarefas: [] };
                 }
                 mesesAtraso[chaveMesFisicoTermino].total++;
-                // Vincula o clique de volta para o mês de INÍCIO da tarefa
-                mesesAtraso[chaveMesFisicoTermino].tarefas.push({ id: item.id, name: item.name, startMes: chaveMesFisicoInicio });
+                mesesAtraso[chaveMesFisicoTermino].tarefas.push({ id: item.id, name: item.name, startMes: targetMes });
             }
             
             if (!concluido && tInicio > that.mockToday) {
@@ -887,7 +896,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                     mesesFuturo[chaveMesFisicoInicio] = { total: 0, tarefas: [] };
                 }
                 mesesFuturo[chaveMesFisicoInicio].total++;
-                mesesFuturo[chaveMesFisicoInicio].tarefas.push({ id: item.id, name: item.name, startMes: chaveMesFisicoInicio });
+                mesesFuturo[chaveMesFisicoInicio].tarefas.push({ id: item.id, name: item.name, startMes: targetMes });
             }
         });
 
