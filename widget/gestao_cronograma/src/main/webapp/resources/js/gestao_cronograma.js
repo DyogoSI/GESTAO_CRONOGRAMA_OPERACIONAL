@@ -219,8 +219,16 @@ var WidgetGestaoCronograma = SuperWidget.extend({
 
     sincronizarModoMes: function() {
         var $ctx = $("#WidgetGestaoCronograma_" + this.instanceId);
-        $ctx.removeClass("is-view-only");
-        $ctx.find("#modoSomenteVisualizacao_" + this.instanceId).hide();
+        var mesFiltro = $ctx.find("#mesFiltro_" + this.instanceId).val();
+        var mesAtualReal = this.getMesAtual();
+        
+        if (mesFiltro && mesFiltro < mesAtualReal) {
+            $ctx.addClass("is-view-only");
+            $ctx.find("#modoSomenteVisualizacao_" + this.instanceId).show();
+        } else {
+            $ctx.removeClass("is-view-only");
+            $ctx.find("#modoSomenteVisualizacao_" + this.instanceId).hide();
+        }
     },
 
     atualizarTextoMes: function(val) {
@@ -455,6 +463,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         $tbody.empty();
         
         var mesSelecionado = $("#mesFiltro_" + this.instanceId).val();
+        var mesAtualReal = this.getMesAtual();
         
         var dadosFiltrados = this.dadosCronograma.filter(function(item) {
             if (item.competencia && item.competencia !== "") {
@@ -511,12 +520,37 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             var detalheAttr = temDetalhe ? ' data-tooltip="' + String(item.desc).replace(/"/g, '&quot;') + '"' : '';
             var iconeDetalhe = temDetalhe ? ' <i class="fa-regular fa-circle-question detail-hint"></i>' : '';
             
-            var acoesHtml = '<button class="btn btn-sm" data-editar-etapa data-docid="' + item.documentId + '" title="Editar Etapa" style="padding: 6px 10px; border-radius: 4px; margin-right: 6px; background-color: var(--primary-blue); color: white; border: none;">' +
-                    '<i class="fa-solid fa-pen"></i>' +
-                  '</button>' +
-                  '<button class="btn btn-danger btn-sm" data-excluir-etapa data-docid="' + item.documentId + '" title="Excluir Etapa" style="padding: 6px 10px; border-radius: 4px;">' +
-                    '<i class="fa-solid fa-trash"></i>' +
-                  '</button>';
+            // --- VALIDAÇÃO DE EDIÇÃO/EXCLUSÃO ---
+            var taskStartMonth = "";
+            if (item.start !== "A definir" && item.start !== "Data Inválida") {
+                var p = item.start.split('/');
+                taskStartMonth = p[2] + "-" + p[1];
+            }
+            
+            var taskEndMonth = "";
+            if (item.end !== "A definir" && item.end !== "Data Inválida") {
+                var p = item.end.split('/');
+                taskEndMonth = p[2] + "-" + p[1];
+            }
+            
+            var podeEditar = true;
+            // Bloqueia a edição se a data física de início ou de término pertencer a um mês anterior ao atual
+            if ((taskStartMonth && taskStartMonth < mesAtualReal) || (taskEndMonth && taskEndMonth < mesAtualReal)) {
+                podeEditar = false;
+            }
+            // ------------------------------------
+                  
+            var acoesHtml = '';
+            if (podeEditar) {
+                acoesHtml = '<button class="btn btn-sm" data-editar-etapa data-docid="' + item.documentId + '" title="Editar Etapa" style="padding: 6px 10px; border-radius: 4px; margin-right: 6px; background-color: var(--primary-blue); color: white; border: none;">' +
+                        '<i class="fa-solid fa-pen"></i>' +
+                      '</button>' +
+                      '<button class="btn btn-danger btn-sm" data-excluir-etapa data-docid="' + item.documentId + '" title="Excluir Etapa" style="padding: 6px 10px; border-radius: 4px;">' +
+                        '<i class="fa-solid fa-trash"></i>' +
+                      '</button>';
+            } else {
+                acoesHtml = '<span style="color: var(--text-muted); font-size: 11px; font-weight: 700;"><i class="fa-solid fa-lock"></i> Leitura</span>';
+            }
                   
             var trHtml = '<tr id="step-' + item.id + '-' + that.instanceId + '" style="cursor: pointer;">' +
                 '<td data-label="ETAPA"><span class="step-number ' + respInfo.stepClass + '">' + displayId + '</span></td>' +
@@ -550,7 +584,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         var calMes = this.currentDate.getMonth();
         
         this.dadosCronograma.forEach(function(item) {
-            // CALENDÁRIO: Continua mapeando a data de Término para mostrar a bolinha do vencimento real
             var tFim = that.parseDate(item.end);
             if (!tFim) return;
             
@@ -565,7 +598,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                         that.eventDates[time] = { steps: [], isStart: false, isEnd: true };
                     }
                     
-                    // CORREÇÃO: O redirecionamento no clique deve ir para a aba da competência.
                     var targetMes = item.competencia;
                     if (!targetMes || targetMes === "") {
                         var tIni = that.parseDate(item.start) || tFim;
@@ -635,7 +667,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
                         that.resetFilters(true); 
                         
                         var firstStep = currentEventData.steps[0];
-                        var taskMonth = firstStep.startMes; // Agora puxa a competência
+                        var taskMonth = firstStep.startMes; 
 
                         that.currentDate = new Date(parseInt(taskMonth.split('-')[0], 10), parseInt(taskMonth.split('-')[1], 10) - 1, 1);
                         $widgetContext.find("#mesFiltro_" + that.instanceId).val(taskMonth);
@@ -848,7 +880,7 @@ var WidgetGestaoCronograma = SuperWidget.extend({
         $ctx.find("#gestao-kpi-acerto-" + this.instanceId).text(taxaAcerto !== null ? taxaAcerto.toString().replace(".", ",") + "%" : "--");
         $ctx.find("#gestao-kpi-acerto-desc-" + this.instanceId).text(taxaAcerto !== null ? folhasComRetrabalho + " folha(s) com retrabalho" : "Aguardando volume processado");
         $ctx.find("#gestao-kpi-custo-" + this.instanceId).text(custoMedio !== null ? this.formatCurrencyBR(custoMedio) : "--");
-        $ctx.find("#gestao-kpi-custo-desc-" + this.instanceId).text(custoMedio !== null ? colaboradores + " colaborador(es) consideredos" : "Aguardando custo e headcount");
+        $ctx.find("#gestao-kpi-custo-desc-" + this.instanceId).text(custoMedio !== null ? colaboradores + " colaborador(es) considerados" : "Aguardando custo e headcount");
     },
     
     renderizarPaneisLaterais: function() {
@@ -877,7 +909,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             var dataInicio = new Date(tInicio);
             var chaveMesFisicoInicio = dataInicio.getFullYear() + "-" + ("0" + (dataInicio.getMonth() + 1)).slice(-2);
 
-            // CORREÇÃO: Força o redirecionamento para o mês da competência
             var targetMes = item.competencia;
             if (!targetMes || targetMes === "") {
                 targetMes = chaveMesFisicoInicio;
@@ -900,7 +931,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             }
         });
 
-        // ================= CONSTRUIR ATRASOS =================
         var chavesAtraso = Object.keys(mesesAtraso).sort();
         if (chavesAtraso.length === 0) {
             $containerAtrasos.html('<span class="overdue-months-empty">Nenhuma tarefa atrasada fisicamente.</span>');
@@ -933,7 +963,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             $containerAtrasos.html(htmlAtrasos);
         }
         
-        // ================= CONSTRUIR FUTUROS =================
         var chavesFuturo = Object.keys(mesesFuturo).sort();
         if (chavesFuturo.length === 0) {
             $containerFuturos.html('<span class="future-months-empty" style="color: var(--text-muted); font-size: 11px; font-weight: 700;">Nenhuma atividade futura agendada fisicamente.</span>');
@@ -998,7 +1027,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
     getTarefasPorMes: function(mesRef) {
         if (!mesRef) return [];
         var that = this;
-        // Prioriza a DATA DE INÍCIO para listar o que está na tabela do gestor
         return this.dadosCronograma.filter(function(item) {
             if (item.end === "Data Inválida" || item.end === "A definir") return false;
             
@@ -1270,6 +1298,17 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             FLUIGC.toast({ title: 'Atenção: ', message: 'Preencha a Tarefa, a Competência e a Data de Término.', type: 'warning' });
             return;
         }
+
+        // --- VALIDAÇÃO: Bloqueio de datas físicas anteriores ---
+        var mesAtualReal = that.getMesAtual();
+        var mesInicio = dataInicio ? dataInicio.substring(0, 7) : "";
+        var mesTermino = dataTermino ? dataTermino.substring(0, 7) : "";
+        
+        if ((mesInicio && mesInicio < mesAtualReal) || (mesTermino && mesTermino < mesAtualReal)) {
+            FLUIGC.toast({ title: 'Ação Bloqueada: ', message: 'Não é permitida a adição ou edição de atividades com data física (início ou término) em meses anteriores.', type: 'warning' });
+            return;
+        }
+        // -----------------------------------------------
         
         var duracaoDias = 0;
         var srtInicio = "";
