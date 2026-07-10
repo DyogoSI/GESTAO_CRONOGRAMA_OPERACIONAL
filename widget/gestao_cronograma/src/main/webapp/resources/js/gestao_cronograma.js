@@ -285,8 +285,8 @@ var WidgetGestaoCronograma = SuperWidget.extend({
 
     getResponsavelInfo: function(responsavel) {
         var normalizado = (responsavel || "").trim().toLowerCase();
-        if (normalizado === "cliente") {
-            return { key: "cliente", textClass: "resp-cliente", bgClass: "bg-cliente", stepClass: "step-cliente" };
+        if (normalizado === "netzero") {
+            return { key: "netzero", textClass: "resp-cliente", bgClass: "bg-cliente", stepClass: "step-cliente" };
         }
         if (normalizado === "irho") {
             return { key: "irho", textClass: "resp-irho", bgClass: "bg-irho", stepClass: "step-irho" };
@@ -520,7 +520,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             var detalheAttr = temDetalhe ? ' data-tooltip="' + String(item.desc).replace(/"/g, '&quot;') + '"' : '';
             var iconeDetalhe = temDetalhe ? ' <i class="fa-regular fa-circle-question detail-hint"></i>' : '';
             
-            // --- VALIDAÇÃO DE EDIÇÃO/EXCLUSÃO ---
             var taskStartMonth = "";
             if (item.start !== "A definir" && item.start !== "Data Inválida") {
                 var p = item.start.split('/');
@@ -534,11 +533,9 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             }
             
             var podeEditar = true;
-            // Bloqueia a edição se a data física de início ou de término pertencer a um mês anterior ao atual
             if ((taskStartMonth && taskStartMonth < mesAtualReal) || (taskEndMonth && taskEndMonth < mesAtualReal)) {
                 podeEditar = false;
             }
-            // ------------------------------------
                   
             var acoesHtml = '';
             if (podeEditar) {
@@ -1299,7 +1296,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             return;
         }
 
-        // --- VALIDAÇÃO: Bloqueio de datas físicas anteriores ---
         var mesAtualReal = that.getMesAtual();
         var mesInicio = dataInicio ? dataInicio.substring(0, 7) : "";
         var mesTermino = dataTermino ? dataTermino.substring(0, 7) : "";
@@ -1308,7 +1304,6 @@ var WidgetGestaoCronograma = SuperWidget.extend({
             FLUIGC.toast({ title: 'Ação Bloqueada: ', message: 'Não é permitida a adição ou edição de atividades com data física (início ou término) em meses anteriores.', type: 'warning' });
             return;
         }
-        // -----------------------------------------------
         
         var duracaoDias = 0;
         var srtInicio = "";

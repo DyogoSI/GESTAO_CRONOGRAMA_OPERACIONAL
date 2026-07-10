@@ -1,4 +1,3 @@
-<!-- gestao_cronograma / view.ftl — código completo final -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -8,7 +7,7 @@
             
             <header class="crono-header" style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 20px;">
                 <div class="header-banner" style="display: flex; align-items: center; gap: 12px;">
-                    <img src="/gestao_cronograma_takono/resources/images/IRHO-BRANCO.png" alt="Logo" class="banner-logo" onerror="this.style.display='none'" style="margin: 0; max-height: 42px;">
+                    <img src="/gestao_cronograma/resources/images/IRHO-BRANCO.png" alt="Logo" class="banner-logo" onerror="this.style.display='none'" style="margin: 0; max-height: 42px;">
                     <div class="header-text" style="text-align: left; margin: 0;">
                         <h1 style="margin: 0 0 2px 0; font-size: 25px; font-weight: 700; font-family: 'Montserrat', sans-serif; letter-spacing: -0.5px;">GESTÃO DO CRONOGRAMA</h1>
                         <p class="banner-subtitle" style="margin: 0; font-size: 12px; font-family: 'Montserrat', sans-serif; opacity: 0.8;">Painel de Acompanhamento e Implantação de Clientes</p>
@@ -27,6 +26,7 @@
                     <button type="button" class="btn-month-nav" id="btnNextMes_${instanceId}" title="Próximo mês" aria-label="Próximo mês">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
+  
                     <input type="month" id="mesFiltro_${instanceId}" style="width: 0; height: 0; opacity: 0; position: absolute; z-index: -1;">
                 </div>
             </header>
@@ -78,7 +78,7 @@
                 <div class="form-card-footer">
                     <button class="btn-crono-outline" data-cancelar-duplicar>Cancelar</button>
                     <button class="btn-crono-save" id="btnSalvarDuplicar_${instanceId}" data-salvar-duplicar>
-                         <i class="fa-solid fa-copy"></i> Confirmar Duplicação
+                        <i class="fa-solid fa-copy"></i> Confirmar Duplicação
                     </button>
                 </div>
             </div>
@@ -103,9 +103,9 @@
                             <i class="fa-solid fa-user"></i>
                             <select class="form-control" id="responsavelEtapa_${instanceId}">
                                 <option value="">Selecione...</option>
-                                <option value="Cliente">Cliente</option>
-                                <option value="IRHO">IRHO</option>
                                 <option value="Takono">Takono</option>
+                                <option value="IRHO">IRHO</option>
+                                <option value="Outros">Outros</option>
                             </select>
                         </div>
                     </div>
@@ -182,9 +182,9 @@
             <div class="main-content" style="display: grid; grid-template-columns: 1.8fr 0.8fr; gap: 25px; margin-bottom: 25px;">
                 <div class="left-column">
                     <div class="responsavel-legend">
-                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-cliente-bg"></span> Cliente</span>
+                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-cliente-bg"></span> Takono</span>
                         <span class="responsavel-legend-item"><span class="responsavel-dot resp-irho-bg"></span> IRHO</span>
-                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-outros-bg"></span> Takono</span>
+                        <span class="responsavel-legend-item"><span class="responsavel-dot resp-outros-bg"></span> Outros</span>
                     </div>
                     <div class="table-container">
                         <table style="width: 100%;">
@@ -293,4 +293,4 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="/gestao_cronograma_takono/resources/js/gestao_cronograma_takono.js"></script>
+<script type="text/javascript" src="/gestao_cronograma/resources/js/gestao_cronograma.js"></script>

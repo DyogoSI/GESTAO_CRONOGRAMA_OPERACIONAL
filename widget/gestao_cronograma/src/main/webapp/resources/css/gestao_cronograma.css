@@ -11,6 +11,8 @@
     --text-dark: #333;
     --text-muted: #666;
     --border-color: #e0e0e0;
+    --outros-color: #9ca3af;
+    --outros-color-light: #e5e7eb;
 
     font-family: 'Inter', sans-serif;
     color: var(--text-dark);
@@ -202,25 +204,25 @@
 .widget-cronograma .c1, .widget-cronograma .c3, .widget-cronograma .c5, .widget-cronograma .c7 { color: var(--brand-orange); }
 .widget-cronograma .c2, .widget-cronograma .c4, .widget-cronograma .c6, .widget-cronograma .c8 { color: var(--primary-blue); }
 
-/* Cores fixas por responsável: Cliente = laranja, IRHO = azul, Outros = cinza */
+/* Cores fixas por responsável: NetZero = laranja, IRHO = azul, Outros = cinza claro */
 .widget-cronograma .resp-cliente { color: var(--brand-orange); }
 .widget-cronograma .resp-irho { color: var(--primary-blue); }
-.widget-cronograma .resp-outros { color: #64748b; }
+.widget-cronograma .resp-outros { color: var(--outros-color); }
 
 .widget-cronograma .step-number.step-cliente { background-color: var(--brand-orange) !important; }
 .widget-cronograma .step-number.step-irho { background-color: var(--primary-blue) !important; }
-.widget-cronograma .step-number.step-outros { background-color: #64748b !important; }
+.widget-cronograma .step-number.step-outros { background-color: var(--outros-color) !important; }
 
 .widget-cronograma .bg-cliente { background: linear-gradient(180deg, var(--brand-orange-light) 0%, var(--brand-orange) 100%); }
 .widget-cronograma .bg-irho { background: linear-gradient(180deg, #1c3d7a 0%, var(--primary-blue) 100%); }
-.widget-cronograma .bg-outros { background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); }
+.widget-cronograma .bg-outros { background: linear-gradient(180deg, var(--outros-color-light) 0%, var(--outros-color) 100%); }
 
 .widget-cronograma .responsavel-legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 10px; padding: 8px 10px; background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; }
 .widget-cronograma .responsavel-legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; }
 .widget-cronograma .responsavel-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .widget-cronograma .responsavel-dot.resp-cliente-bg { background-color: var(--brand-orange); }
 .widget-cronograma .responsavel-dot.resp-irho-bg { background-color: var(--primary-blue); }
-.widget-cronograma .responsavel-dot.resp-outros-bg { background-color: #64748b; }
+.widget-cronograma .responsavel-dot.resp-outros-bg { background-color: var(--outros-color); }
 
 /* Tooltip do Detalhe da Atividade (exibido ao passar o mouse sobre a atividade) */
 .widget-cronograma .process-col[data-tooltip] { cursor: help; position: relative; }
